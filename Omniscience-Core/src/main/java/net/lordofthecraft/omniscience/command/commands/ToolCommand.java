@@ -41,25 +41,44 @@ public class ToolCommand extends SimpleCommand {
 
     @Override
     public CommandResult run(CommandSender sender, IOmniscience core, String[] args) {
-        if (sender instanceof Player) {
-            Player pl = (Player) sender;
+        if (!(sender instanceof Player)) {
+            return CommandResult.success();
+        }
 
-            if (Omniscience.hasActiveWand(pl)) {
-                if (!pl.getInventory().contains(OmniConfig.INSTANCE.getWandMaterial())) {
-                    pl.getInventory().addItem(new ItemStack(OmniConfig.INSTANCE.getWandMaterial()));
-                    pl.sendMessage(GREEN + "Added the Omniscience data tool to your inventory. Happy Searching.");
-                } else {
-                    Omniscience.wandDeactivateFor(pl);
-                    pl.sendMessage(GREEN + "Successfully deactivated the Omniscience Data Tool");
-                }
+        Player pl = (Player) sender;
+        var material = OmniConfig.INSTANCE.getWandMaterial();
+
+        if (Omniscience.hasActiveWand(pl)) {
+            int slot = pl.getInventory().first(material);
+            boolean inHand = pl.getInventory().getItemInMainHand().getType() == material;
+
+            if (slot == -1) {
+                pl.getInventory().addItem(new ItemStack(material));
+                pl.sendMessage(GREEN + "Added the Omniscience data tool to your inventory.");
+            } else if (!inHand) {
+                // magnetic: swap tool into main hand
+                ItemStack current = pl.getInventory().getItemInMainHand();
+                pl.getInventory().setItemInMainHand(pl.getInventory().getItem(slot));
+                pl.getInventory().setItem(slot, current);
+                pl.sendMessage(GREEN + "Moved the data tool to your hand.");
             } else {
-                Omniscience.wandActivateFor(pl);
-                if (!pl.getInventory().contains(OmniConfig.INSTANCE.getWandMaterial())) {
-                    pl.getInventory().addItem(new ItemStack(OmniConfig.INSTANCE.getWandMaterial()));
-                    pl.sendMessage(GREEN + "Added the Omniscience data tool to your inventory. Happy Searching.");
-                } else {
-                    pl.sendMessage(GREEN + "Activated the Omniscience Data Tool " + GRAY + "(" + OmniConfig.INSTANCE.getWandMaterial().name() + ")");
+                Omniscience.wandDeactivateFor(pl);
+                pl.sendMessage(GREEN + "Deactivated the Omniscience Data Tool");
+            }
+        } else {
+            Omniscience.wandActivateFor(pl);
+            int slot = pl.getInventory().first(material);
+            if (slot == -1) {
+                pl.getInventory().addItem(new ItemStack(material));
+                pl.sendMessage(GREEN + "Added the Omniscience data tool to your inventory.");
+            } else {
+                boolean inHand = pl.getInventory().getItemInMainHand().getType() == material;
+                if (!inHand) {
+                    ItemStack current = pl.getInventory().getItemInMainHand();
+                    pl.getInventory().setItemInMainHand(pl.getInventory().getItem(slot));
+                    pl.getInventory().setItem(slot, current);
                 }
+                pl.sendMessage(GREEN + "Activated the Omniscience Data Tool " + GRAY + "(" + material.name() + ")");
             }
         }
         return CommandResult.success();

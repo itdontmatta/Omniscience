@@ -41,6 +41,8 @@ public final class DataKeys {
     public static final DataKey DAMAGE_CAUSE = DataKey.of("DamageCause");
     public static final DataKey DAMAGE_AMOUNT = DataKey.of("DamageAmount");
     public static final DataKey TELEPORT_CAUSE = DataKey.of("TeleportCause");
+    public static final DataKey RECIPIENT = DataKey.of("Recipient");
+    public static final DataKey SERVER = DataKey.of("Server");
 
     //META TAGS
     public static final DataKey DISPLAY_METHOD = DataKey.of("DisplayMethod");
