@@ -3,7 +3,7 @@ plugins {
 }
 
 allprojects {
-    group = 'net.lordofthecraft'
+    group = 'com.itdontmatta'
     version = '1.21.8'
 }
 
@@ -22,7 +22,6 @@ subprojects {
         maven { url 'https://oss.sonatype.org/content/groups/public/' }
         maven { url 'https://maven.enginehub.org/repo/' }
         maven { url 'https://repo.lucko.me/' }
-        maven { url 'https://repo.lordofthecraft.net/repository/lotc-release/' }
     }
 
     dependencies {

@@ -18,7 +18,7 @@ shadowJar {
     archiveBaseName.set('Omniscience')
     archiveClassifier.set('')
 
-    relocate 'me.lucko.commodore', 'net.lordofthecraft.omniscience.commodore'
+    relocate 'me.lucko.commodore', 'com.itdontmatta.omniscience.commodore'
 
     dependencies {
         include(dependency('org.mongodb:mongo-java-driver'))
