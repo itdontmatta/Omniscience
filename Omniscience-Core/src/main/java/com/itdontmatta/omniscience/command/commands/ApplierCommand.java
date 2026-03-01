@@ -19,6 +19,7 @@ import com.itdontmatta.omniscience.api.util.Formatter;
 import com.itdontmatta.omniscience.command.result.CommandResult;
 import com.itdontmatta.omniscience.command.result.UseResult;
 import com.itdontmatta.omniscience.command.util.SearchParameterHelper;
+import com.itdontmatta.omniscience.worldedit.FAWERollbackHandler;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -80,6 +81,7 @@ public class ApplierCommand extends SimpleCommand {
                             sender.sendMessage(Formatter.error("No results."));
                         } else {
                             try {
+                                // Process all entries with the standard Actionable system
                                 for (DataEntry entry : results) {
                                     if (entry instanceof Actionable) {
                                         Actionable actionable = (Actionable) entry;

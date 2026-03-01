@@ -11,6 +11,7 @@ import com.itdontmatta.omniscience.api.util.reflection.ReflectionHandler;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -20,10 +21,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import static com.itdontmatta.omniscience.api.data.DataKeys.*;
 
@@ -192,7 +196,7 @@ public final class OEntry {
 
         public OEntry droppedItem(ItemStack item, Location location) {
             this.eventName = "drop";
-            wrapper.set(ITEMSTACK, item);
+            writeItemData(item);
             wrapper.set(QUANTITY, item.getAmount());
             wrapper.set(TARGET, item.getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
@@ -202,7 +206,7 @@ public final class OEntry {
 
         public OEntry pickup(Item item) {
             this.eventName = "pickup";
-            wrapper.set(ITEMSTACK, item.getItemStack());
+            writeItemData(item.getItemStack());
             wrapper.set(QUANTITY, item.getItemStack().getAmount());
             wrapper.set(TARGET, item.getItemStack().getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
@@ -253,7 +257,10 @@ public final class OEntry {
                 wrapper.set(TARGET, killed.getName());
             }
             wrapper.set(ENTITY_TYPE, killed.getType().name());
-            wrapper.set(ENTITY, ReflectionHandler.getEntityAsBytes(killed));
+            String entityBytes = ReflectionHandler.getEntityAsBytes(killed);
+            if (entityBytes != null) {
+                wrapper.set(ENTITY, entityBytes);
+            }
             writeLastDamageData(killed);
             writeLocationData(killed.getLocation());
             return new OEntry(sourceBuilder, this);
@@ -263,7 +270,7 @@ public final class OEntry {
             this.eventName = "entity-withdraw";
             wrapper.set(TARGET, itemStack.getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
-            wrapper.set(ITEMSTACK, itemStack);
+            writeItemData(itemStack);
             wrapper.set(ENTITY_TYPE, frame.getType().name());
             writeLocationData(frame.getLocation());
             return new OEntry(sourceBuilder, this);
@@ -273,7 +280,7 @@ public final class OEntry {
             this.eventName = "entity-deposit";
             wrapper.set(TARGET, itemStack.getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
-            wrapper.set(ITEMSTACK, itemStack);
+            writeItemData(itemStack);
             wrapper.set(ENTITY_TYPE, frame.getType().name());
             writeLocationData(frame.getLocation());
             return new OEntry(sourceBuilder, this);
@@ -283,7 +290,7 @@ public final class OEntry {
             this.eventName = "entity-deposit";
             wrapper.set(TARGET, itemStack.getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
-            wrapper.set(ITEMSTACK, itemStack);
+            writeItemData(itemStack);
             wrapper.set(ENTITY_TYPE, stand.getType().name());
             writeLocationData(stand.getLocation());
             return new OEntry(sourceBuilder, this);
@@ -293,7 +300,7 @@ public final class OEntry {
             this.eventName = "entity-withdraw";
             wrapper.set(TARGET, itemStack.getType().name());
             wrapper.set(DISPLAY_METHOD, "item");
-            wrapper.set(ITEMSTACK, itemStack);
+            writeItemData(itemStack);
             wrapper.set(ENTITY_TYPE, stand.getType().name());
             writeLocationData(stand.getLocation());
             return new OEntry(sourceBuilder, this);
@@ -365,7 +372,7 @@ public final class OEntry {
 
             wrapper.set(ITEM_SLOT, transaction.getSlot());
             //Set the itemstack with the quantity that was actually deposited into the container
-            wrapper.set(ITEMSTACK, diff);
+            writeItemData(diff);
             wrapper.set(DISPLAY_METHOD, "item");
             wrapper.set(QUANTITY, diff.getAmount());
             //Store the itemstack that was in this slot before the item was deposited, if any
@@ -393,7 +400,7 @@ public final class OEntry {
 
             wrapper.set(ITEM_SLOT, transaction.getSlot());
             //Set the itemstack with the quantity that was actually withdrawn from the container
-            wrapper.set(ITEMSTACK, diff);
+            writeItemData(diff);
             wrapper.set(DISPLAY_METHOD, "item");
             wrapper.set(QUANTITY, diff.getAmount());
             //Store the itemstack that was in this slot before the items were withdrawn
@@ -480,6 +487,140 @@ public final class OEntry {
             wrapper.set(LOCATION.then(Z), location.getBlockZ());
             wrapper.set(LOCATION.then(WORLD), location.getWorld().getUID().toString());
         }
+
+        /**
+         * Writes ItemStack data including custom name, lore, and enchantments
+         */
+        protected void writeItemData(ItemStack item) {
+            wrapper.set(ITEMSTACK, item);
+            String itemName = getItemDisplayName(item);
+            if (itemName != null) {
+                wrapper.set(NAME, itemName);
+                OmniApi.info("[writeItemData] Saved NAME: " + itemName);
+            }
+            // Save item lore
+            String itemLore = getItemLore(item);
+            if (itemLore != null) {
+                wrapper.set(ITEM_LORE, itemLore);
+                OmniApi.info("[writeItemData] Saved LORE: " + itemLore);
+            } else {
+                OmniApi.info("[writeItemData] No lore found for " + item.getType().name());
+            }
+            // Save item enchantments
+            String itemEnchants = getItemEnchantments(item);
+            if (itemEnchants != null) {
+                wrapper.set(ITEM_ENCHANTS, itemEnchants);
+                OmniApi.info("[writeItemData] Saved ENCHANTS: " + itemEnchants);
+            } else {
+                OmniApi.info("[writeItemData] No enchants found for " + item.getType().name());
+            }
+        }
+
+        /**
+         * Gets the NBT string for an item (for hover tooltips)
+         */
+        private String getItemNbtString(ItemStack item) {
+            if (item == null) {
+                return null;
+            }
+            // Use ReflectionHandler to get proper NBT format
+            return ReflectionHandler.getItemJson(item);
+        }
+
+        /**
+         * Gets the display name of an item (custom name or item name component)
+         */
+        private String getItemDisplayName(ItemStack item) {
+            if (item == null || !item.hasItemMeta()) {
+                return null;
+            }
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasDisplayName()) {
+                return meta.getDisplayName();
+            }
+            try {
+                if (meta.hasItemName()) {
+                    return meta.getItemName();
+                }
+            } catch (NoSuchMethodError ignored) {
+                // Method doesn't exist in older versions
+            }
+            return null;
+        }
+
+        /**
+         * Gets the lore of an item as a newline-separated string
+         */
+        private String getItemLore(ItemStack item) {
+            if (item == null || !item.hasItemMeta()) {
+                return null;
+            }
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasLore()) {
+                List<String> lore = meta.getLore();
+                if (lore != null && !lore.isEmpty()) {
+                    return String.join("\n", lore);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Gets the enchantments of an item as a formatted string
+         */
+        private String getItemEnchantments(ItemStack item) {
+            if (item == null) {
+                return null;
+            }
+            // Try getting enchantments from ItemStack first
+            Map<Enchantment, Integer> enchants = item.getEnchantments();
+
+            // If empty, try getting from ItemMeta (1.20.5+ component format)
+            if (enchants.isEmpty() && item.hasItemMeta()) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta.hasEnchants()) {
+                    enchants = meta.getEnchants();
+                }
+            }
+
+            if (enchants.isEmpty()) {
+                return null;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                String enchantName = entry.getKey().getKey().getKey();
+                // Convert snake_case to Title Case
+                enchantName = formatEnchantmentName(enchantName);
+                sb.append(enchantName);
+                if (entry.getValue() > 1) {
+                    sb.append(" ").append(toRoman(entry.getValue()));
+                }
+            }
+            return sb.toString();
+        }
+
+        private String formatEnchantmentName(String name) {
+            String[] parts = name.split("_");
+            StringBuilder result = new StringBuilder();
+            for (String part : parts) {
+                if (result.length() > 0) {
+                    result.append(" ");
+                }
+                result.append(part.substring(0, 1).toUpperCase()).append(part.substring(1).toLowerCase());
+            }
+            return result.toString();
+        }
+
+        private String toRoman(int num) {
+            String[] romanNumerals = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+            if (num >= 1 && num <= 10) {
+                return romanNumerals[num - 1];
+            }
+            return String.valueOf(num);
+        }
     }
 
     public static final class EntryBuilder {
@@ -565,7 +706,7 @@ public final class OEntry {
         public OEntry cloned(ItemStack itemStack) {
             this.eventName = "clone";
             wrapper.set(TARGET, itemStack.getType().name());
-            wrapper.set(ITEMSTACK, itemStack);
+            writeItemData(itemStack);
             wrapper.set(DISPLAY_METHOD, "item");
             writeLocationData(player().getLocation());
             return new OEntry(sourceBuilder, this);

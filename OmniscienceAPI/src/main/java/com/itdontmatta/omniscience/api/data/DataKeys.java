@@ -43,6 +43,9 @@ public final class DataKeys {
     public static final DataKey TELEPORT_CAUSE = DataKey.of("TeleportCause");
     public static final DataKey RECIPIENT = DataKey.of("Recipient");
     public static final DataKey SERVER = DataKey.of("Server");
+    public static final DataKey ITEM_NBT = DataKey.of("ItemNBT");
+    public static final DataKey ITEM_LORE = DataKey.of("ItemLore");
+    public static final DataKey ITEM_ENCHANTS = DataKey.of("ItemEnchants");
 
     //META TAGS
     public static final DataKey DISPLAY_METHOD = DataKey.of("DisplayMethod");

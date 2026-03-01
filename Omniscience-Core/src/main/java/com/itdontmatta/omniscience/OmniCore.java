@@ -178,8 +178,11 @@ final class OmniCore implements IOmniscience {
             if (flagHandlerList.stream().noneMatch(fh -> fh instanceof FlagWorldEditSel)) {
                 flagHandlerList.add(new FlagWorldEditSel(Bukkit.getPluginManager().getPlugin("WorldEdit")));
             }
+            // Register WorldEdit logging
+            com.itdontmatta.omniscience.worldedit.WorldEditLogger.register();
         } else {
             flagHandlerList.removeIf(fh -> fh instanceof FlagWorldEditSel);
+            com.itdontmatta.omniscience.worldedit.WorldEditLogger.unregister();
         }
     }
 

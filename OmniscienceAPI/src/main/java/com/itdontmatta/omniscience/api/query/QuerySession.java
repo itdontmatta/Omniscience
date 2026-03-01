@@ -18,6 +18,7 @@ public class QuerySession {
     protected int radius;
     protected Sort sortOrder = Sort.NEWEST_FIRST;
     protected List<ParameterHandler> ignoredDefaults = Lists.newArrayList();
+    protected List<String> ignoredDefaultNames = Lists.newArrayList();
 
     public QuerySession(CommandSender sender) {
         this.sender = sender;
@@ -63,8 +64,20 @@ public class QuerySession {
         ignoredDefaults.add(handler);
     }
 
+    public void addIgnoredDefault(String parameterName) {
+        ignoredDefaultNames.add(parameterName);
+    }
+
     public boolean isIgnoredDefault(ParameterHandler handler) {
-        return ignoredDefaults.contains(handler);
+        if (ignoredDefaults.contains(handler)) {
+            return true;
+        }
+        for (String name : ignoredDefaultNames) {
+            if (handler.canHandle(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getRadius() {

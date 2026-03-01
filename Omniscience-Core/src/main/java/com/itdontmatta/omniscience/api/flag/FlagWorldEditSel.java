@@ -48,6 +48,12 @@ public class FlagWorldEditSel extends BaseFlagHandler {
 
             LocalSession localSession = worldEdit.getSession(player);
 
+            // Check if selection world exists
+            if (localSession.getSelectionWorld() == null) {
+                player.sendMessage(Formatter.error("Please make a WorldEdit selection first (use //wand and select two points)"));
+                return Optional.empty();
+            }
+
             RegionSelector selector = localSession.getRegionSelector(localSession.getSelectionWorld());
 
             if (selector == null) {
