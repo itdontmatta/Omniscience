@@ -74,6 +74,10 @@ public final class DataHelper {
         String fullClassName = oClassName.get();
         try {
             Class clazz = ConfigurationSerialization.getClassByAlias(fullClassName);
+            if (clazz == null) {
+                OmniApi.warning("[Rollback] Unknown serializable class alias: " + fullClassName);
+                return null;
+            }
             DataWrapper localWrapper = wrapper.copy().remove(CONFIG_CLASS);
             Map<String, Object> configMap = Maps.newHashMap();
             localWrapper.getKeys(false)
@@ -90,8 +94,13 @@ public final class DataHelper {
                                 }
                             }));
             ConfigurationSerializable config = ConfigurationSerialization.deserializeObject(configMap, clazz);
+            if (config == null) {
+                OmniApi.warning("[Rollback] Failed to deserialize " + fullClassName + " - deserializeObject returned null");
+                OmniApi.warning("[Rollback] Data was: " + configMap);
+            }
             return (T) config;
         } catch (Exception e) {
+            OmniApi.warning("[Rollback] Exception deserializing " + fullClassName + ": " + e.getMessage());
             e.printStackTrace();
             return null;
         }

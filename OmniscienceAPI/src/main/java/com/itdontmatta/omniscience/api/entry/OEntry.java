@@ -19,6 +19,7 @@ import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -454,7 +455,16 @@ public final class OEntry {
             if (state instanceof Sign) {
                 wrapper.set(keyToWrite.then(SIGN_TEXT), Lists.newArrayList(((Sign) state).getLines()));
             } else if (state instanceof Container) {
-                wrapper.set(keyToWrite.then(INVENTORY), DataHelper.convertArrayToMap(((Container) state).getInventory().getContents()));
+                Container container = (Container) state;
+                Inventory inventory = container.getInventory();
+
+                // For double chests, only save this chest half's inventory (27 slots)
+                // Otherwise rollback tries to restore 54 items into a 27-slot chest
+                if (inventory.getHolder() instanceof DoubleChest && container instanceof Chest) {
+                    inventory = ((Chest) container).getBlockInventory();
+                }
+
+                wrapper.set(keyToWrite.then(INVENTORY), DataHelper.convertArrayToMap(inventory.getContents()));
             } else if (state instanceof Banner) {
                 wrapper.set(keyToWrite.then(BANNER_PATTERNS), ((Banner) state).getPatterns());
             } else if (state instanceof Jukebox) {
@@ -496,23 +506,16 @@ public final class OEntry {
             String itemName = getItemDisplayName(item);
             if (itemName != null) {
                 wrapper.set(NAME, itemName);
-                OmniApi.info("[writeItemData] Saved NAME: " + itemName);
             }
             // Save item lore
             String itemLore = getItemLore(item);
             if (itemLore != null) {
                 wrapper.set(ITEM_LORE, itemLore);
-                OmniApi.info("[writeItemData] Saved LORE: " + itemLore);
-            } else {
-                OmniApi.info("[writeItemData] No lore found for " + item.getType().name());
             }
             // Save item enchantments
             String itemEnchants = getItemEnchantments(item);
             if (itemEnchants != null) {
                 wrapper.set(ITEM_ENCHANTS, itemEnchants);
-                OmniApi.info("[writeItemData] Saved ENCHANTS: " + itemEnchants);
-            } else {
-                OmniApi.info("[writeItemData] No enchants found for " + item.getType().name());
             }
         }
 

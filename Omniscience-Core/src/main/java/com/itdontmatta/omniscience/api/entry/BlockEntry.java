@@ -1,5 +1,6 @@
 package com.itdontmatta.omniscience.api.entry;
 
+import com.itdontmatta.omniscience.api.OmniApi;
 import com.itdontmatta.omniscience.api.data.DataKey;
 import com.itdontmatta.omniscience.api.data.DataWrapper;
 import com.itdontmatta.omniscience.api.data.Transaction;
@@ -9,9 +10,11 @@ import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static com.itdontmatta.omniscience.api.data.DataKeys.*;
 
@@ -73,13 +76,48 @@ public class BlockEntry extends DataEntryComplete implements Actionable {
         if (state instanceof Container) {
             Container container = (Container) state;
 
-            data.getWrapper(parent.then(INVENTORY)).ifPresent(wrapper -> wrapper.getKeys(false)
-                    .forEach(key -> wrapper.getConfigSerializable(key)
-                            .ifPresent(config -> {
-                                if (config instanceof ItemStack) {
-                                    container.getInventory().setItem(Integer.valueOf(key.toString()), (ItemStack) config);
-                                }
-                            })));
+            // Use getSnapshotInventory() for BlockState snapshots - this ensures
+            // inventory changes are persisted when update() is called.
+            // getBlockInventory()/getInventory() return the live inventory which
+            // bypasses the snapshot mechanism.
+            Inventory inventory = container.getSnapshotInventory();
+
+            int inventorySize = inventory.getSize();
+
+            data.getWrapper(parent.then(INVENTORY)).ifPresent(wrapper -> {
+                Set<DataKey> keys = wrapper.getKeys(false);
+                int restoredCount = 0;
+                int failedCount = 0;
+
+                for (DataKey key : keys) {
+                    int slot;
+                    try {
+                        slot = Integer.parseInt(key.toString());
+                    } catch (NumberFormatException e) {
+                        OmniApi.warning("[Rollback] Invalid slot key: " + key);
+                        continue;
+                    }
+
+                    if (slot >= inventorySize) {
+                        OmniApi.warning("[Rollback] Slot " + slot + " exceeds inventory size " + inventorySize + " - skipping");
+                        failedCount++;
+                        continue;
+                    }
+
+                    Optional<ItemStack> itemOpt = wrapper.getConfigSerializable(key);
+                    if (itemOpt.isPresent()) {
+                        inventory.setItem(slot, itemOpt.get());
+                        restoredCount++;
+                    } else {
+                        // Item failed to deserialize - already logged in DataHelper
+                        failedCount++;
+                    }
+                }
+
+                if (failedCount > 0) {
+                    OmniApi.warning("[Rollback] Container rollback: " + restoredCount + " items restored, " + failedCount + " failed");
+                }
+            });
         } else if (state instanceof Sign) {
             Sign sign = (Sign) state;
             data.getStringList(parent.then(SIGN_TEXT)).ifPresent(signText -> {
