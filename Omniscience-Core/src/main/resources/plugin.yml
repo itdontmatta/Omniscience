@@ -1,0 +1,17 @@
+name: Omniscience
+version: ${project.version}
+main: net.lordofthecraft.omniscience.Omniscience
+softdepend: [WorldEdit, FastAsyncWorldEdit, CraftBook]
+authors: [501warhead]
+description: The Spigot solution to block logging and rollbacks for 1.13.2+
+website: https://lotc.co/
+api-version: 1.13
+
+commands:
+  omniscience:
+    aliases: [o, omni]
+    usage: /<command> help
+    permission: omniscience.mayuse
+  omnitele:
+    usage: /<command>
+    permission: omniscience.mayuse

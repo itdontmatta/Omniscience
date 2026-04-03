@@ -1,0 +1,307 @@
+#          ______   .___  ___. .__   __.  __       _______.  ______  __   _______ .__   __.   ______  _______         #
+#         /  __  \  |   \/   | |  \ |  | |  |     /       | /      ||  | |   ____||  \ |  |  /      ||   ____|        #
+#        |  |  |  | |  \  /  | |   \|  | |  |    |   (----`|  ,----'|  | |  |__   |   \|  | |  ,----'|  |__           #
+#        |  |  |  | |  |\/|  | |  . `  | |  |     \   \    |  |     |  | |   __|  |  . `  | |  |     |   __|          #
+#        |  `--'  | |  |  |  | |  |\   | |  | .----)   |   |  `----.|  | |  |____ |  |\   | |  `----.|  |____         #
+#         \______/  |__|  |__| |__| \__| |__| |_______/     \______||__| |_______||__| \__|  \______||_______|        #
+#                                                                                                                     #
+
+#####           Become All Knowing           #####
+
+# P.S.: It's pronounced "om·nis·cience", not "Omni-science". The Science of Omni can go somewhere else.
+
+##################################################################
+###                          General                           ###
+##################################################################
+
+display:
+  format: d/M/yy hh:mm:ss
+  simpleFormat: d/M/yy
+
+# The material used for looking up records, must be a block
+wand:
+  material: redstone_lamp
+
+# Enables Debug messages
+debug: false
+
+##################################################################
+###                       Server Config                        ###
+##################################################################
+
+
+# We support two database types: mongodb or dynamodb.
+# DynamoDB is a database style used by Amazon Web Services. If you want to use this (it's pretty cool!) look it up to find out more.
+# DynamoDB is required by the web panel.
+database:
+  type: mongodb
+  name: Omniscience
+  dataTableName: DataEntry
+
+# The MongoDB server(s) to store information in.
+# You can specify more servers for scalability.
+
+# Don't know what MongoDB is? Find out more information here: https://www.mongodb.com/what-is-mongodb
+mongodb:
+  user: username
+  password: password
+  usesauth: false
+  authenticationDatabase: users
+  servers:
+    - ServerA:
+        address: 127.0.0.1
+        port: 27017
+
+# Q: Where is MySQL/SQL?
+# A: MySQL and other SQL-based programs/languages are nice when it comes to the collection and storage of uniform data.
+# E.g. if I'm deciding I'm only ever going to store a list of when cobblestone blocks were broken by a player, MySQL would be a great go-to option.
+# But let's say that some cobblestone blocks are named. Suddenly, MySQL becomes significantly worse and requires a series of "gross hacks" (aka denormalized data) to store that data.
+# MongoDB (aka NoSQL) handles this significantly better and can store that name for those cobblestone blocks just fine without breaking a sweat.
+# As such, MongoDB and other NoSQL solutions will be the only things Omniscience supports in order to keep a uniform data process.
+
+# Apologies for any inconvenience this might cause. - 501warhead
+
+# Q: Can I run this locally?
+# A: You'll need to have a mongodb instance installed on your local machine if you're testing locally.
+
+##################################################################
+###                          Storage                           ###
+##################################################################
+
+# Various rules for storing and pruning data
+storage:
+  # Set when records will be removed from storage. (1s = 1 second, 1m = 1 minute, 1h = 1 hour, 1d = 1 day, 1w = 1 week)
+  expireRecords: 4w
+  # The maximum pool size
+  maxPoolSize: 10
+  # The minimum pool size
+  minPoolSize: 2
+  # The amount of records to delete at once when deleting
+  purgeBatchLimit: 100000
+
+##################################################################
+###                     Search Arguments                       ###
+##################################################################
+
+# The defaults for searching. If these are enabled and no parameter is specified, it'll turn to these.
+# These aren't configured dynamically. The only acceptable values here are "radius" and "time".
+defaults:
+  # Whether or not defaults are enabled.
+  enabled: true
+  # The default radius to run searches in if no radius parameter is specified
+  radius: 5
+  # The default time to look back if no time parameter is specified (1s = 1 second, 1m = 1 minute, 1h = 1 hour, 1d = 1 day, 1w = 1 week)
+  time: 3d
+
+# The maximum a player can search for without omniscience.override.[node]
+limits:
+  # The max block radius a player can search in
+  radius: 250
+  # The maximum amount of records a player can pull
+  lookup.size: 1000
+  # The max amount of "actionable" things that can be performed on by the player at once. E.G., rollbacks/restores.
+  actionables: 10000
+
+##################################################################
+###                       Enabled Events                       ###
+##################################################################
+
+# Whether or not you want these actions to be recorded
+# TRUE: They're being recorded
+# FALSE: They're not being recorded
+events:
+  # Record when a block is broken
+  break:
+    enabled: true
+    past: broke
+  # Record when a block is placed
+  place:
+    enabled: true
+    past: placed
+  # Record when a block is decayed, (e.g. leaves)
+  decay:
+    enabled: true
+    past: decayed
+  # Record when a block is grown
+  grow:
+    enabled: true
+    past: grew
+  # Record when a block is formed (e.g. ice)
+  form:
+    enabled: true
+    past: formed
+  # Record when a command is run
+  command:
+    enabled: true
+    past: ran command
+  # Record when someone says something
+  say:
+    enabled: true
+    past: said
+  # Record when an item is dropped
+  drop:
+    enabled: true
+    past: dropped
+  # Record when an item is picked up
+  pickup:
+    enabled: true
+    past: picked up
+  # Record when a player quits
+  quit:
+    enabled: true
+    past: quit
+  # Record when a player joins
+  join:
+    enabled: true
+    past: joined
+  # Record when an entity dies
+  death:
+    enabled: true
+    past: killed
+  # Record when an entity hits or is hit by a player
+  hit:
+    enabled: true
+    past: hit
+  # Record when an entity shoots or is shot by a player
+  shot:
+    enabled: true
+    past: shot
+  # Record when an entity is named with a name tag
+  named:
+    enabled: true
+    past: named
+  # Record when a container is opened by a player
+  open:
+    enabled: true
+    past: opened
+  # Record when a container is closed by a player
+  close:
+    enabled: true
+    past: closed
+  # Record when a usable block is used by a player (door, lever, pressure plate, etc.)
+  use:
+    enabled: true
+    past: used
+  # Record when a player deposits an item into a container
+  deposit:
+    enabled: true
+    past: deposited
+  # Record when a player withdraws an item from a container
+  withdraw:
+    enabled: true
+    past: withdrew
+  # Record when a source ignites a block
+  ignite:
+    enabled: true
+    past: ignited
+  # Record a unique event when a player clones items while in creative mode. Useful for crumb trails
+  clone:
+    enabled: true
+    past: cloned
+  useSign:
+    enabled: true
+    past: used
+  # Record when an entity has it's item taken out
+  entity-withdraw:
+    enabled: true
+    past: withdrew
+  # Record when an entity is used to store an item
+  entity-deposit:
+    enabled: true
+    past: deposited
+  # Record when an entity is mounted
+  mount:
+    enabled: true
+    past: mounted
+  # Record when an entity is dismounted
+  dismount:
+    enabled: true
+    past: dismounted
+  # Record when a player is teleported
+  teleport:
+    enabled: true
+    past: teleported to
+  # Record when a sculk sensor or shrieker is triggered by a player (1.19+)
+  sculk:
+    enabled: true
+    past: triggered
+  # Record when a player inserts a book into a chiseled bookshelf (1.20+)
+  bookshelf-insert:
+    enabled: true
+    past: inserted
+  # Record when a player removes a book from a chiseled bookshelf (1.20+)
+  bookshelf-remove:
+    enabled: true
+    past: removed
+  # Record when a player brushes a suspicious block and finds an item (1.20+)
+  brush:
+    enabled: true
+    past: brushed
+  # Record when a player inserts an item into a decorated pot (1.20+)
+  pot-insert:
+    enabled: true
+    past: inserted
+  # Record when a player removes an item from a decorated pot (1.20+)
+  pot-remove:
+    enabled: true
+    past: removed
+  # Record when a crafter block automatically crafts an item (1.21+)
+  craft:
+    enabled: true
+    past: crafted
+  # Record when a player unlocks a vault with a trial key (1.21+)
+  vault:
+    enabled: true
+    past: unlocked
+  # Record when a player inserts an item into a bundle (1.21+)
+  bundle-insert:
+    enabled: true
+    past: inserted into bundle
+  # Record when a player extracts an item from a bundle (1.21+)
+  bundle-extract:
+    enabled: true
+    past: extracted from bundle
+  # Record when a player opens a shulker box (enhanced tracking with color)
+  shulker-open:
+    enabled: true
+    past: opened shulker
+  # Record when a player closes a shulker box (enhanced tracking with color)
+  shulker-close:
+    enabled: true
+    past: closed shulker
+  # Record when a player deposits an item into a shulker box
+  shulker-deposit:
+    enabled: true
+    past: deposited into shulker
+  # Record when a player withdraws an item from a shulker box
+  shulker-withdraw:
+    enabled: true
+    past: withdrew from shulker
+##################################################################
+###                        AI Assistant                        ###
+##################################################################
+
+# Configure Vertex AI for the /omni ai command
+# This helps users learn how to construct search queries
+ai:
+  # Enable AI features
+  enabled: false
+  # Your Vertex AI API key (from Google Cloud Console > APIs & Services > Credentials)
+  apiKey: your-api-key-here
+  # The model to use
+  # Options: gemini-2.0-flash (default), gemini-1.5-flash, gemini-1.5-pro, gemini-2.5-flash-lite
+  model: gemini-2.0-flash
+
+##################################################################
+###                     Plugin Integration                     ###
+##################################################################
+
+# Whether to enable some plugin integration methods
+integration:
+  # Will track when a player rightclicks signs if CraftBook is enabled on the server.
+  craftbookSigns: true
+  # Will track block changes and updates if WorldEdit is on the server [NOT YET IMPLEMENTED]
+  worldEdit: true
+  # If FastAsyncWorldEdit is available we'll use the FAWE API to handle rollbacks and restores Async. This means much less lag!
+  fastAsyncWorldEdit: true
+

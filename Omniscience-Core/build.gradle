@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.0'
+}
+
+dependencies {
+    implementation project(':OmniscienceAPI')
+    implementation 'me.lucko:commodore:2.2'
+    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.11.462'
+
+    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.10-SNAPSHOT'
+
+    testImplementation 'org.mockito:mockito-core:4.6.1'
+    testImplementation 'junit:junit:4.12'
+}
+
+shadowJar {
+    archiveBaseName.set('Omniscience')
+    archiveClassifier.set('')
+
+    relocate 'me.lucko.commodore', 'net.lordofthecraft.omniscience.commodore'
+
+    dependencies {
+        include(dependency('org.mongodb:mongo-java-driver'))
+        include(dependency('me.lucko:commodore'))
+        include(project(':OmniscienceAPI'))
+        include(dependency('org.apache.commons:commons-lang3'))
+    }
+}
+
+build.dependsOn shadowJar

@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'net.lordofthecraft'
+    version = '1.21.8'
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+        maven { url 'https://oss.sonatype.org/content/groups/public/' }
+        maven { url 'https://maven.enginehub.org/repo/' }
+        maven { url 'https://repo.lucko.me/' }
+        maven { url 'https://repo.lordofthecraft.net/repository/lotc-release/' }
+    }
+
+    dependencies {
+        compileOnly 'org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT'
+    }
+}

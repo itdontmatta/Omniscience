@@ -1,0 +1,4 @@
+rootProject.name = 'Omniscience'
+
+include 'OmniscienceAPI'
+include 'Omniscience-Core'
