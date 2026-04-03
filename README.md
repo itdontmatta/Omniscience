@@ -2,6 +2,8 @@
 
 Block logging and rollback plugin for Paper/Spigot 1.21.
 
+Originally forked from [501warhead/Omniscience](https://github.com/501warhead/Omniscience).
+
 ## Commands
 
 ### Main Command
