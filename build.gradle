@@ -3,7 +3,7 @@ plugins {
 }
 
 allprojects {
-    group = 'com.itdontmatta'
+    group = 'net.medievalrp'
     version = '1.21.8'
 }
 

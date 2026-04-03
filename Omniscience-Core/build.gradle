@@ -20,7 +20,7 @@ shadowJar {
     archiveBaseName.set('Omniscience')
     archiveClassifier.set('')
 
-    relocate 'me.lucko.commodore', 'com.itdontmatta.omniscience.commodore'
+    relocate 'me.lucko.commodore', 'net.medievalrp.omniscience.commodore'
 
     dependencies {
         include(dependency('me.lucko:commodore'))
