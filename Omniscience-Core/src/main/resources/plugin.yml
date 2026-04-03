@@ -5,7 +5,9 @@ softdepend: [WorldEdit, FastAsyncWorldEdit, CraftBook]
 authors: [itdontmatta]
 description: The Spigot solution to block logging and rollbacks for 1.21
 website: https://github.com/itdontmatta/Omniscience
-api-version: 1.13
+api-version: '1.21'
+libraries:
+  - org.mongodb:mongo-java-driver:3.8.2
 
 commands:
   omniscience:

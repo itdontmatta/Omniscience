@@ -4,5 +4,5 @@ plugins {
 
 dependencies {
     api 'org.apache.commons:commons-lang3:3.8.1'
-    api 'org.mongodb:mongo-java-driver:3.8.2'
+    compileOnly 'org.mongodb:mongo-java-driver:3.8.2'
 }

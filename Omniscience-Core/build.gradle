@@ -8,10 +8,12 @@ dependencies {
     implementation 'me.lucko:commodore:2.2'
     implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.11.462'
 
+    compileOnly 'org.mongodb:mongo-java-driver:3.8.2'
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.10-SNAPSHOT'
 
     testImplementation 'org.mockito:mockito-core:4.6.1'
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT'
 }
 
 shadowJar {
@@ -21,7 +23,6 @@ shadowJar {
     relocate 'me.lucko.commodore', 'com.itdontmatta.omniscience.commodore'
 
     dependencies {
-        include(dependency('org.mongodb:mongo-java-driver'))
         include(dependency('me.lucko:commodore'))
         include(project(':OmniscienceAPI'))
         include(dependency('org.apache.commons:commons-lang3'))
